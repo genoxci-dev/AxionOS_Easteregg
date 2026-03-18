@@ -70,6 +70,7 @@ fun SpaceGame(statsManager: StatsManager, onExit: () -> Unit) {
         var warpLines by remember { mutableStateOf(List(15) { WarpLine(Random.nextFloat()*sw, Random.nextFloat()*sh, Random.nextFloat()*10f+5f, Random.nextFloat()*40f+20f) }) }
         
         var secretTaps by remember { mutableIntStateOf(0) }
+        var ignoreTaps by remember { mutableStateOf(true) }
         var overdriveMode by remember { mutableStateOf(false) }
         
         var currentScreenShake by remember { mutableFloatStateOf(0f) }
@@ -92,6 +93,8 @@ fun SpaceGame(statsManager: StatsManager, onExit: () -> Unit) {
 
         // --- SINGLE-THREADED GAME LOOP ---
         LaunchedEffect(Unit) {
+            delay(50)
+            ignoreTaps = false
             var lastFrameTime = -1L
             while(true) {
                 withFrameMillis { frameTime ->
@@ -299,7 +302,9 @@ fun SpaceGame(statsManager: StatsManager, onExit: () -> Unit) {
                             e.changes.forEach { c -> 
                                 if (gamePhase == "PLAYING") { 
                                     if (c.pressed && !c.previousPressed) { 
-                                        fireCommands.add(shipPos - Offset(0f, 60f))
+                                        if (!ignoreTaps) {
+                                            fireCommands.add(shipPos - Offset(0f, 60f))
+                                        }
                                     }
                                     if (c.pressed) { 
                                         val m = c.positionChange()
